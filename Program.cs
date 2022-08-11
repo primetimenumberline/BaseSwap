@@ -4,8 +4,7 @@
 //
 //
 //
-// begin_example_symbol_mappings
-//
+// Sample bases
 // { "0", "1" };                                                                            //base 2    binary standard encoding
 // { "0", "1", "2" };                                                                       //base 3
 // { "0", "1", "2", "3", "4", "5", "6" };                                                   //base 7
@@ -14,41 +13,39 @@
 // { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };      //base 16   hex (hex!!!)
 // { "*", ".", ":", ".:", "::", ".::", ":::" };                                             //base 7    broken encoding (note that dots were used for counting in prehistoric times, prior to inventing arithmetic)
 //
-// end_example_symbol_mappings
 //
 //
 //
-//begin_example_declarations
+// Sample declarations
+// string[] input_base = { "0", "1", "2" };                          //base 3
+// string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };     //base 7
+// string[] input_number = { "1", "1", "2", "0", "1" };              //11201 base 3, aka 127 base 10 should compute to 241 base 7
 //
-//string[] input_base = { "0", "1", "2" };                          //base 3
-//string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };     //base 7
-//string[] input_number = { "1", "1", "2", "0", "1" };              //11201 base 3, aka 127 base 10 should compute to 241 base 7
+// string[] input_base = { "0", "1", "2", "3", "4", "5", "6" };          //base 7
+// string[] output_base = { "*", ".", ":", ".:", "::", ".::", ":::" };   //base 7 broken
+// string[] input_number = { "1", "1", "2", "0", "1" };                  //11201 base 7, aka 127 base 10 should compute to ..:*. base 7 broken
 //
-//string[] input_base = { "0", "1", "2", "3", "4", "5", "6" };          //base 7
-//string[] output_base = { "*", ".", ":", ".:", "::", ".::", ":::" };   //base 7 broken
-//string[] input_number = { "1", "1", "2", "0", "1" };                  //11201 base 7, aka 127 base 10 should compute to ..:*. base 7 broken
-//
-//string[] input_base = { "0", "1" };                                               //base 2
-//string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };      //base 10
-//string[] input_number = { "1", "0", "1" };                                        //101 base 2, aka 5 base 10 should compute to 5 base 10
-//
-//end_example_declarations
+// string[] input_base = { "0", "1" };                                               //base 2
+// string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };      //base 10
+// string[] input_number = { "1", "0", "1" };                                        //101 base 2, aka 5 base 10 should compute to 5 base 10
 
 
 
 
 
 
-string[] input_base = { "0", "1", "2", "3", "4", "5", "6" };          //base 7
-string[] output_base = { "*", ".", ":", ".:", "::", ".::", ":::" };   //base 7 broken
-string[] input_number = { "1", "1", "2", "0", "1" };                  //11201 base 7, aka 127 base 10 should compute to ..:*. base 7 broken
+string[] input_base = { "0", "1", "2" };                          //base 3
+string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };     //base 7
+string[] input_number = { "1", "1", "2", "0", "1" };              //11201 base 3, aka 127 base 10 should compute to 241 base 7
 
 //Another approach, not shown here, is:
+//
 //string decimal_number = ConverToDecimal(input_number, input_base);
 //string output = ConvertFromDecimal(decimal_number, output_base);
-//by using decimal as an intermediary value, we would not have to 
-//built our own add() and mul() functions since this is already done
 //
+//by using decimal as an intermediary value, we would not have to 
+//build our own arithmetic functions such  as add() and mul()
+//since support for these operations already exists in modern languages
 
 string input = string.Join("", input_number);
 string output = processNumber(ref input_number);
@@ -263,8 +260,8 @@ string[,] buildAdditionTable(string[] number_base)
     //      :       :       .:       ::
     //     .:      .:       ::      .::      :::
     //     ::      ::      .::      :::       .*       ..
-    //    .::     .::      :::       .*       ..      ..:      ..:
-    //    :::     :::       .*       ..      ..:      .::      .::     ..::
+    //    .::     .::      :::       .*       ..       .:      ..:
+    //    :::     :::       .*       ..       .:      ..:      .::     ..::
     //
     //
     //
@@ -297,7 +294,106 @@ string[,] buildAdditionTable(string[] number_base)
     // base symbols must remain unique and can NEVER be combinations of other base symbols
 
     string[,] table = new string[number_base.Length,number_base.Length];
+
+    //starting with the first symbol in our number base
+    string[] arr = { number_base[0] };
+
+    //begin filling the addition table
+    //there are two options for filling the table
+    //
+    //Option 1
+    //Work diagonally, noting the following simple pattern:
+    //
+    //Symbol 0 fills diagonal entries: [0,0]
+    //Symbol 1 fills diagonal entries: [0,1] [1,0]
+    //Symbol 2 fills diagonal entries: [0,2] [1,1] [2,0]
+    //Symbol 3 fills diagonal entries: [0,3] [1,2] [2,1] [3,0]
+    //Symbol 4 fills diagonal entries: [0,4] [1,3] [2,2] [3,1] [4,0]
+    //Symbol 5 fills diagonal entries: [0,5] [1,4] [2,3] [3,2] [4,1] [5,0]
+    //Symbol 6 fills diagonal entries: [0,6] [1,5] [2,4] [3,3] [4,2] [5,1] [6,0]
+    //Symbol 7 fills diagonal entries:       [1,6] [2,5] [3,4] [4,3] [5,2] [6,1]
+    //Symbol 8 fills diagonal entries:             [2,6] [3,5] [4,4] [5,3] [6,2]
+    //Symbol 9 fills diagonal entries:                   [3,6] [4,5] [5,4] [6,3]
+    //Symbol A fills diagonal entries:                         [4,6] [5,5] [6,4]
+    //Symbol B fills diagonal entries:                               [5,6] [6,5]
+    //Symbol C fills diagonal entries:                                     [6,6]
+    //
+    //Option 2
+    //Copy the symbol map directly into first column, 
+    //since anything added to zero is just itself,
+    //and then with each subsequent column we construct, just copy
+    //the data from the previous column, shifting up by one, and
+    //being sure to update the last entry in the column,
+    //which is the only new number as compared to the previous column
+    //
+    //      0
+    //      1   2
+    //      2   3   4
+    //      3   4   5   6
+    //      4   5   6  10  11
+    //      5   6  10  11  12  13
+    //      6  10  11  12  13  14  15
+    //
+    //with this method, don't forget to also fill
+    //the symmetric location about the diagonal, while working
+    //
+    //
+    //When completed, full table should look like this, no matter your approach:
+    //
+    //      0    1    2    3    4    5    6
+    //      1    2    3    4    5    6   10
+    //      2    3    4    5    6   10   11
+    //      3    4    5    6   10   11   12
+    //      4    5    6   10   11   12   13
+    //      5    6   10   11   12   13   14
+    //      6   10   11   12   13   14   15
+
+    int symbol = 0;
+    int total = (number_base.Length - 1) * 2;
+    while (symbol <= total)
+    {
+        string number = string.Join("", arr);
+        int i = 0;
+        while (i <= symbol/2)
+        {
+            int j = symbol - i;
+
+            if ( i < table.GetLength(0) &&
+                 j < table.GetLength(1) &&
+                 i + j == symbol )
+            {
+                table[i, j] = number;
+            }
+            if (j < table.GetLength(0) &&
+                i < table.GetLength(1) &&
+                i + j == symbol)
+            {
+                table[j, i] = number;
+            }
+            i++;
+        }
+
+        inc(ref arr, number_base);
+        symbol++;
+    }
+
+    printTable(table);
+
     return table;
+}
+
+void printTable(string[,] table)
+{
+    Console.WriteLine("Begin Table");
+    for (int i = 0; i < table.GetLength(0); i++)
+    {
+        for (int j = 0; j < table.GetLength(1); j++)
+        {
+            Console.Write(table[i, j] + "\t");
+        }
+        Console.WriteLine();
+    }
+    Console.WriteLine("End Table");
 }
 
 string[] add(string[] a, string[] b, string[,] table_addition)
@@ -310,6 +406,44 @@ string[] mul(string[] a, string[] b, string[,] table_mulitiplication)
 {
     string[] result = { };
     return result;
+}
+
+void inc(ref string[] arr, string[] map)
+{
+    int index = arr.Length - 1;
+    bool done = false;
+
+    while (!done)
+    {
+        //check current symbol and determine its position in our global map
+        int loc = location(arr[index], map);
+
+        //if it is the last symbol, plusplus increment will cause rollover
+        if (loc == map.Length - 1)
+        {
+            arr[index] = map[0];
+        }
+        //otherwise, increment to next symbol in global map and mark current symbol as done processing
+        else
+        {
+            arr[index] = map[loc + 1];
+            done = true;
+        }
+        index--;
+
+        //if final position in array is reached and we are not done,
+        //then we must add new digit to continue counting
+        if ((index == -1) && (!done))
+        {
+            Array.Resize(ref arr, arr.Length + 1);
+            for (int i = arr.Length - 1; i > 0; i--)
+            {
+                arr[i] = arr[i - 1];
+            }
+            arr[0] = map[1];
+            done = true;
+        }
+    }
 }
 
 void symbolSwap(ref string[] input_number)
