@@ -46,6 +46,9 @@ string[] input_number = { "1", "1", "2", "0", "1" };                  //11201 ba
 //Another approach, not shown here, is:
 //string decimal_number = ConverToDecimal(input_number, input_base);
 //string output = ConvertFromDecimal(decimal_number, output_base);
+//by using decimal as an intermediary value, we would not have to 
+//built our own add() and mul() functions since this is already done
+//
 
 string input = string.Join("", input_number);
 string output = processNumber(ref input_number);
@@ -65,6 +68,7 @@ string processNumber(ref string[] input_number)
         //just symbol swap and return
         //we are not changing number base here
         //we are only changing the encoding of the numbers
+        //aka their symbol mapping
         symbolSwap(ref input_number);
         result = String.Join("", input_number);
     }
@@ -135,9 +139,9 @@ string processNumber(ref string[] input_number)
         // So finally, we have that
         // (11201),3 = (241),7
 
-
-        string[,] table_multiplication = buildMultiplicationTable(output_base);
         string[,] table_addition = buildAdditionTable(output_base);
+        string[,] table_multiplication = buildMultiplicationTable(output_base);
+        
 
         //perform processing
 
@@ -294,6 +298,18 @@ string[,] buildAdditionTable(string[] number_base)
 
     string[,] table = new string[number_base.Length,number_base.Length];
     return table;
+}
+
+string[] add(string[] a, string[] b, string[,] table_addition)
+{
+    string[] result = { };
+    return result;
+}
+
+string[] mul(string[] a, string[] b, string[,] table_mulitiplication)
+{
+    string[] result = { };
+    return result;
 }
 
 void symbolSwap(ref string[] input_number)
