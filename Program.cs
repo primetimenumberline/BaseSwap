@@ -34,9 +34,9 @@
 
 
 
-string[] input_base = { "0", "1", "2" };                          //base 3
-string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };     //base 10 testing ongoing
-string[] input_number = { "1", "1", "2", "0", "1" };              //11201 base 3, aka 127 base 10 should compute to 241 base 7
+string[] input_base = { "0", "1", "2" };
+string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };
+string[] input_number = { "1", "1", "2", "0", "1" };
 
 //Another approach, not shown here, is:
 //
@@ -50,8 +50,8 @@ string[] input_number = { "1", "1", "2", "0", "1" };              //11201 base 3
 string input = string.Join("", input_number);
 string output = processNumber(ref input_number);
 
-Console.WriteLine(input + " in base " + input_base.Length + " is");
-Console.WriteLine(output + " in base " + output_base.Length);
+//Console.WriteLine(input + " in base " + input_base.Length + " is");
+//Console.WriteLine(output + " in base " + output_base.Length);
 
 
 
@@ -142,9 +142,9 @@ string processNumber(ref string[] input_number)
 
         //perform processing
         //currently testing and wip
-        string[] testing = fullAdder("1", "9", "2", table_addition, output_base);
-        string[] testinginput1 = {"9", "0", "2", "1", "0"};
-        string[] testinginput2 = {"2", "3"};
+        //string[] testing = fullAdder("1", "9", "2", table_addition, output_base);
+        string[] testinginput1 = {"6", "0", "2", "1", "6"};
+        string[] testinginput2 = {"6", "3"};
         string[] testresult = add(testinginput1, testinginput2, table_addition, output_base);
 
         result = String.Join("", input_number);
@@ -428,6 +428,10 @@ void printTable(string[,] table)
 
 string[] add(string[] a, string[] b, string[,] table, string[] number_base)
 {
+    Console.WriteLine();
+    Console.WriteLine(string.Join("", a) + " added to " + string.Join("", b) + " is ..processing brb");
+    Console.WriteLine();
+
     int max = a.Length > b.Length ? a.Length : b.Length;
 
     string ci = table[0, 0];
@@ -506,6 +510,7 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
         count++;
     }
 
+    Console.WriteLine();
     Console.WriteLine(string.Join("", a) + " added to " + string.Join("", b) + " is " + string.Join("",result) + " in base " + output_base.Length);
 
     return result;
@@ -527,7 +532,8 @@ string[] halfAdder(string a, string b, string[,] table, string[] number_base)
             result[i] = s[i].ToString();
         }
     }
-    /*
+    
+    //printing for testing
     Console.Write("HA result for a: " + a + " b " + b + " is ");
     if (result.Length == 2)
     {
@@ -537,7 +543,7 @@ string[] halfAdder(string a, string b, string[,] table, string[] number_base)
     {
         Console.WriteLine("sum: " + result[0] + " carry: none");
     }
-    */
+    
     return result;
 }
 
@@ -569,14 +575,15 @@ string[] fullAdder(string a, string b, string ci, string[,] table, string[] numb
             result[0] = intermediate[0];
         }
     }
-    /*
+    
+    //printing for testing
     Console.Write("Stopped FA result: ");
     for(int i = 0; i < result.Length; i++)
     {
         Console.Write(result[i]);
     }
     Console.WriteLine();
-    */
+    
     return result;
 }
 
