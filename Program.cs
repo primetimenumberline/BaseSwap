@@ -35,7 +35,7 @@
 
 
 string[] input_base = { "0", "1", "2" };
-string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };
+string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 string[] input_number = { "1", "1", "2", "0", "1" };
 
 //Another approach, not shown here, is:
@@ -143,8 +143,8 @@ string processNumber(ref string[] input_number)
         //perform processing
         //currently testing and wip
         //string[] testing = fullAdder("1", "9", "2", table_addition, output_base);
-        string[] testinginput1 = {"6", "0", "2", "1", "6"};
-        string[] testinginput2 = {"6", "3"};
+        string[] testinginput1 = {"1", "3", "3", "7"};
+        string[] testinginput2 = { "1", "9", "9", "0"};
         string[] testresult = add(testinginput1, testinginput2, table_addition, output_base);
 
         result = String.Join("", input_number);
@@ -492,23 +492,81 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
             init_carry = c[0];
             result[result.Length - 1 - count] = c[1];
         }
-        //DONT FORGET ABOUT THE CARRY  not yet handled
+
         count++;
     }
     
-    count = 0;
-    while (count < second_half)
+    //how we process the second half, depends on if we have a carry
+    if (init_carry == number_base[0])
     {
-        if(a.Length < b.Length)
+        //if there is no carry, we may directly copy the remaining digits
+        count = 0;
+        while (count < second_half)
         {
-            result[second_half - 1 - count] = b[second_half - 1 - count];
+            if (a.Length < b.Length)
+            {
+                result[second_half - 1 - count] = b[second_half - 1 - count];
+            }
+            else
+            {
+                result[second_half - 1 - count] = a[second_half - 1 - count];
+            }
+            count++;
         }
-        else
-        {
-            result[second_half - 1 - count] = a[second_half - 1 - count];
-        }
-        count++;
     }
+    else
+    {
+        //if a carry is present, we must continue to use the full adder logic in case the carry rolls over
+        count = 0;
+        while (count < second_half)
+        {
+            //if contents are remaining in b, fetch from b[second_half - 1 - count]
+            if (a.Length < b.Length)
+            {
+                string[] c = fullAdder(number_base[0], b[second_half - 1 - count], init_carry, table, number_base);
+                if (c.Length == 1)
+                {
+                    init_carry = number_base[0];
+                    result[second_half - 1 - count] = c[0];
+                }
+                else if (c.Length == 2)
+                {
+                    init_carry = c[0];
+                    result[second_half - 1 - count] = c[1];
+                }
+
+            }
+            //else if contents are remaining in a, fetch from a[second_half - 1 - count]
+            else
+            {
+                string[] c = fullAdder(number_base[0], a[second_half - 1 - count], init_carry, table, number_base);
+                if (c.Length == 1)
+                {
+                    init_carry = number_base[0];
+                    result[second_half - 1 - count] = c[0];
+                }
+                else if (c.Length == 2)
+                {
+                    init_carry = c[0];
+                    result[second_half - 1 - count] = c[1];
+                }
+            }
+            count++;
+        }
+
+        if (init_carry != number_base[0])
+        {
+            //
+            Array.Resize(ref result, result.Length + 1);
+            for (int i = result.Length - 1; i > 0; i--)
+            {
+                result[i] = result[i - 1];
+            }
+            result[0] = init_carry;
+        }
+    }
+
+
 
     Console.WriteLine();
     Console.WriteLine(string.Join("", a) + " added to " + string.Join("", b) + " is " + string.Join("",result) + " in base " + output_base.Length);
