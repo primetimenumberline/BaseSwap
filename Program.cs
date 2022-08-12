@@ -35,7 +35,7 @@
 
 
 string[] input_base = { "0", "1", "2" };                          //base 3
-string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };     //base 7
+string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };     //base 7
 string[] input_number = { "1", "1", "2", "0", "1" };              //11201 base 3, aka 127 base 10 should compute to 241 base 7
 
 //Another approach, not shown here, is:
@@ -142,8 +142,11 @@ string processNumber(ref string[] input_number)
 
         //perform processing
         //currently testing and wip
-        string[] testing = add(input_base, output_base, table_addition, output_base);
-
+        string[] testing = fullAdder("1", "9", "2", table_addition, output_base);
+        string[] testinginput1 = {"1", "2"};
+        string[] testinginput2 = {"2", "3"};
+        string[] testresult = add(testinginput1, testinginput2, table_addition, output_base);
+        Console.WriteLine(string.Join("", testresult));
         result = String.Join("", input_number);
     }
     else
@@ -426,9 +429,11 @@ void printTable(string[,] table)
 string[] add(string[] a, string[] b, string[,] table, string[] number_base)
 {
     int max = a.Length > b.Length ? a.Length : b.Length;
-    string[] c = new string[max];
+
     string ci = table[0, 0];
     string co = table[0, 0];
+    
+    string[] result = new string[max];
 
     //note that numbers are stored in reverse order in the array
     //such that the most sig symbol resides in index length-1
@@ -461,27 +466,37 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
     //in printing the values to the console, but that should be easy to manage
 
     //TODO
-    
+
     int first_half = a.Length < b.Length ? a.Length : b.Length;
     int second_half = max - first_half;
 
-    int count = 0;
+    Console.WriteLine("First half: " + first_half);
+    Console.WriteLine("Second half: " + second_half);
 
+    int count = 0;
+    string init_carry = number_base[0];
     while (count < first_half)
     {
-        //testing and wip
-        string[] result = halfAdder(a[a.Length - 1 - count], b[b.Length - 1 - count],table,number_base);
-
+        string[] c = fullAdder(a[a.Length - 1 - count], b[b.Length - 1 - count], init_carry, table, number_base);
+        
+        if (c.Length == 1)
+        {
+            init_carry = number_base[0];
+            result[result.Length - 1 - count] = c[0];
+        }
+        else if (c.Length == 2)
+        {
+            init_carry = c[0];
+            result[result.Length - 1 - count] = c[1];
+        }
         count++;
     }
 
-    return c;
+    return result;
 }
 
 string[] halfAdder(string a, string b, string[,] table, string[] number_base)
 {
-    //result[0] is the carry symbol
-    //result[1] is the sum symbol
     string s = table[location(a, number_base), location(b, number_base)];
     string[] result = new string[s.Length];
 
@@ -496,35 +511,73 @@ string[] halfAdder(string a, string b, string[,] table, string[] number_base)
             result[i] = s[i].ToString();
         }
     }
-
-    Console.WriteLine("a: " + a + " b: " + b + " len: " + result.Length);
-    for (int i = 0; i < result.Length; i++)
+    /*
+    Console.Write("HA result for a: " + a + " b " + b + " is ");
+    if (result.Length == 2)
     {
-        Console.WriteLine(result[i]);
-    }
-
-    return result;
-}
-/*
-string[] fullAdder(string a, string b, string ci, string[,] table, string[] number_base)
-{
-    string[] intermediate = halfAdder(a, b, table, number_base);
-    string[] result;
-    if (intermediate.Length == 1)
-    {
-        result = halfAdder(ci, intermediate[0])
-    }
-    else if ( intermediate.Length == 2)
-    {
-
+        Console.WriteLine("sum: " + result[1] + " carry: " + result[0]);
     }
     else
     {
-        Console.WriteLine("Error");
+        Console.WriteLine("sum: " + result[0] + " carry: none");
     }
+    */
     return result;
 }
-*/
+
+string[] fullAdder(string a, string b, string ci, string[,] table, string[] number_base)
+{
+    Console.WriteLine("Started FA a " + a + " b " + b + " ci " + ci);
+
+    string[] intermediate = halfAdder(a, b, table, number_base);
+    string[] result = { };
+
+    if (intermediate.Length == 1)
+    {
+        result = halfAdder(ci, intermediate[0], table, number_base);
+    }
+    else if(intermediate.Length == 2)
+    {
+        result = halfAdder(ci, intermediate[1], table, number_base);
+
+        if (result.Length == 1)
+        {
+            Array.Resize(ref result, result.Length + 1);
+            result[1] = result[0];
+            result[0] = intermediate[0];
+        }
+        else if (result.Length == 2)
+        {
+            string save = intermediate[0];
+            intermediate = halfAdder(save, result[0], table, number_base);
+
+            //if (intermediate.Length == 1)
+            //{
+                result[0] = intermediate[0];
+            //}
+            /*
+            else if (intermediate.Length == 2)
+            {
+                Console.WriteLine("HERE");
+                Array.Resize(ref result, result.Length + 1);
+                result[2] = result[1];
+                result[1] = intermediate[1];
+                result[0] = intermediate[0];
+            }
+            */
+        }
+    }
+    
+    Console.Write("Stopped FA result: ");
+    for(int i = 0; i < result.Length; i++)
+    {
+        Console.Write(result[i]);
+    }
+    Console.WriteLine();
+    
+    return result;
+}
+
 string[] mul(string[] a, string[] b, string[,] table_mulitiplication, string[] number_base)
 {
     //TODO
@@ -577,7 +630,7 @@ void symbolSwap(ref string[] input_number)
         int loc = location(input_number[i], input_base);
         if (loc < 0)
         {
-            Console.WriteLine("Error -1");
+            Console.WriteLine("Error, symbol not found in base");
             break;
         }
         else
