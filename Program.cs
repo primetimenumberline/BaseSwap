@@ -11,7 +11,7 @@
 // { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };                                    //base 10   decimal standard encoding
 // { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" };      //base 16   HEX
 // { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };      //base 16   hex (hex!!!)
-// { "*", ".", ":", ".:", "::", ".::", ":::" };                                             //base 7    broken encoding (note that dots were used for counting in prehistoric times, prior to inventing arithmetic)
+// { "*", ".", ":", ".:", "::", ".::", ":::" };                                             //base 7    broken encoding (symbols must be one char long, and must be unique)
 //
 //
 //
@@ -221,6 +221,24 @@ string[,] buildMultiplicationTable(string[] number_base)
     // base symbols must remain unique and can NEVER be combinations of other base symbols
 
     string[,] table = new string[number_base.Length, number_base.Length];
+
+    //starting with the first symbol in our number base
+    string[] arr = { number_base[0] };
+
+    //for multiplication table, we will simply call the increment function
+    //as many times as needed, to build out the full table
+    //note that anything times zero is still zero, and 
+    //anything times one is still that original thing
+    //and all the arithmetic works the same, but the 
+    //encoding will all look a little different in any new base
+
+    for (int i = 0; i < table.GetLength(0); i++)
+    {
+        for(int j = i; j < table.GetLength(1); j++)
+        {
+
+        }
+    }
     return table;
 }
 
@@ -398,8 +416,44 @@ void printTable(string[,] table)
 
 string[] add(string[] a, string[] b, string[,] table_addition)
 {
-    string[] result = { };
-    return result;
+    int max = a.Length > b.Length ? a.Length : b.Length;
+    string[] c = new string[max];
+    string ci = table_addition[0, 0];
+    string co = table_addition[0, 0]; ;
+
+        //note that numbers are stored in reverse order in the array
+        //such that the most sig symbol resides in index length-1
+        //and least sig symbol resides in index 0
+        //thus addition must start at length-1 and iterate down the line
+        //from least sig to most sig symbol
+        //so for two sizes of numbers, we are solving the following
+        //
+        //   eg.
+        //            0  1  2  3  4  5  6  7  8  9
+        //     a     [] [] [] [] [] [] [] [] [] []     Most Sig Symbol on RHS
+        //     b     [] [] [] []                       Most Sig Symbol on RHS
+        //
+        //    a[9] + b[3] = c[9] + carry out, carry in not shown
+        //    a[8] + b[2] = c[8] + carry out, carry in not shown
+        //    a[7] + b[1] = c[7] + carry out, carry in not shown
+        //    a[6] + b[0] = c[6] + carry out, carry in not shown
+        //    a[5] + ci   = c[5] + carry out
+        //    a[4] + ci   = c[4] + co
+        //    a[3] + ci   = c[3] + co
+        //    a[2] + ci   = c[2] + co
+        //    a[1] + ci   = c[1] + co
+        //    a[0] + ci   = c[0] + co
+        //           ci   = c[-1] aka resize array if needed, to add new digit
+        //
+        //numbers could have also been stored with their least sig digit at 0
+        //and with their most sig digit at length-1, which would have made 
+        //implementation a bit easier, but I went this way and I'm committed now
+        //note that with the other endianess, the overhead would come
+        //in printing the values to the console, but that should be easy to manage
+
+        
+
+    return c;
 }
 
 string[] mul(string[] a, string[] b, string[,] table_mulitiplication)
@@ -415,15 +469,15 @@ void inc(ref string[] arr, string[] map)
 
     while (!done)
     {
-        //check current symbol and determine its position in our global map
+        //check current symbol and determine its position in our global map/list
         int loc = location(arr[index], map);
 
-        //if it is the last symbol, plusplus increment will cause rollover
+        //if we are at the last symbol in our base, increment will cause rollover
         if (loc == map.Length - 1)
         {
             arr[index] = map[0];
         }
-        //otherwise, increment to next symbol in global map and mark current symbol as done processing
+        //if we are not at the last symbol, take next symbol
         else
         {
             arr[index] = map[loc + 1];
