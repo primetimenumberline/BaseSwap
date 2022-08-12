@@ -109,7 +109,7 @@ string processNumber(ref string[] input_number)
         //
         // first step in converting to new base, is to
         // represent input number in input base, for this example, base 3
-        // ((((1*3 + 1)3 + 2)3 + 0)3 + 1)
+        // ((((1*10 + 1)10 + 2)10 + 0)10 + 1)
         //
         // since arithmetic works in any base
         // we simply convert each number to the new base
