@@ -154,10 +154,12 @@ string processNumber(ref string[] input_number)
 
 string[,] buildMultiplicationTable(string[] number_base)
 {
-    //TODO 
+    //NOTE ASSUMPTION: number_base symbols must only be 1 char in length,
+    //and number_base symbols must all be unique from each other
     //
     //
-    // Base 7 multiplication table for symbol lookup, below
+    // Example
+    // The base 7 multiplication table is given below
     // Note for example, that 3*3 is still nine, but nine looks like 12 not 9
     // in base 7, so here is a quick ref of the table we are building
     // as we continue with the example of (11021),3 to ( ),7 so please enjoy:
@@ -222,32 +224,38 @@ string[,] buildMultiplicationTable(string[] number_base)
 
     string[,] table = new string[number_base.Length, number_base.Length];
 
-    //starting with the first symbol in our number base
-    string[] arr = { number_base[0] };
-
-    //for multiplication table, we will simply call the increment function
-    //as many times as needed, to build out the full table
-    //note that anything times zero is still zero, and 
-    //anything times one is still that original thing
-    //and all the arithmetic works the same, but the 
-    //encoding will all look a little different in any new base
+    //for multiplication table, we will use the add
+    //function repeatedly, and we will cheat a bit
+    //by pre-filling the zero index with zero's
+    //since anything times zero is zero
+    //and we will use a similar trick for the one's
+    //then we will call add function for the rest
 
     for (int i = 0; i < table.GetLength(0); i++)
     {
-        for(int j = i; j < table.GetLength(1); j++)
-        {
-
-        }
+        table[0, i] = number_base[0];
+        table[i, 0] = number_base[0];
     }
+    for (int i = 1; i < table.GetLength(0); i++)
+    {
+        table[1, i] = number_base[i];
+        table[i, 1] = number_base[i];
+    }
+
+    //TODO
+
+    printTable(table);
     return table;
 }
 
 string[,] buildAdditionTable(string[] number_base)
 {
-    //TODO
+    //NOTE ASSUMPTION: number_base symbols must only be 1 char in length,
+    //and number_base symbols must all be unique from each other
     //
     //
-    // Base 7 addition table for symbol lookup, below
+    // Example
+    // The base 7 addition table is given below
     // Note for example, that 4+4 is still eigth, but eigth looks like 11 not 8
     // in base 7, so here is a quick ref of the table we are building
     // as we continue with the example of (11021),3 to ( ),7 so please enjoy:
@@ -314,7 +322,7 @@ string[,] buildAdditionTable(string[] number_base)
     string[,] table = new string[number_base.Length,number_base.Length];
 
     //starting with the first symbol in our number base
-    string[] arr = { number_base[0] };
+    string[] sym = { number_base[0] };
 
     //begin filling the addition table
     //there are two options for filling the table
@@ -370,7 +378,7 @@ string[,] buildAdditionTable(string[] number_base)
     int total = (number_base.Length - 1) * 2;
     while (symbol <= total)
     {
-        string number = string.Join("", arr);
+        string number = string.Join("", sym);
         int i = 0;
         while (i <= symbol/2)
         {
@@ -391,12 +399,11 @@ string[,] buildAdditionTable(string[] number_base)
             i++;
         }
 
-        inc(ref arr, number_base);
+        inc(ref sym, number_base);
         symbol++;
     }
 
     printTable(table);
-
     return table;
 }
 
@@ -419,68 +426,69 @@ string[] add(string[] a, string[] b, string[,] table_addition)
     int max = a.Length > b.Length ? a.Length : b.Length;
     string[] c = new string[max];
     string ci = table_addition[0, 0];
-    string co = table_addition[0, 0]; ;
+    string co = table_addition[0, 0];
 
-        //note that numbers are stored in reverse order in the array
-        //such that the most sig symbol resides in index length-1
-        //and least sig symbol resides in index 0
-        //thus addition must start at length-1 and iterate down the line
-        //from least sig to most sig symbol
-        //so for two sizes of numbers, we are solving the following
-        //
-        //   eg.
-        //            0  1  2  3  4  5  6  7  8  9
-        //     a     [] [] [] [] [] [] [] [] [] []     Most Sig Symbol on RHS
-        //     b     [] [] [] []                       Most Sig Symbol on RHS
-        //
-        //    a[9] + b[3] = c[9] + carry out, carry in not shown
-        //    a[8] + b[2] = c[8] + carry out, carry in not shown
-        //    a[7] + b[1] = c[7] + carry out, carry in not shown
-        //    a[6] + b[0] = c[6] + carry out, carry in not shown
-        //    a[5] + ci   = c[5] + carry out
-        //    a[4] + ci   = c[4] + co
-        //    a[3] + ci   = c[3] + co
-        //    a[2] + ci   = c[2] + co
-        //    a[1] + ci   = c[1] + co
-        //    a[0] + ci   = c[0] + co
-        //           ci   = c[-1] aka resize array if needed, to add new digit
-        //
-        //numbers could have also been stored with their least sig digit at 0
-        //and with their most sig digit at length-1, which would have made 
-        //implementation a bit easier, but I went this way and I'm committed now
-        //note that with the other endianess, the overhead would come
-        //in printing the values to the console, but that should be easy to manage
+    //note that numbers are stored in reverse order in the array
+    //such that the most sig symbol resides in index length-1
+    //and least sig symbol resides in index 0
+    //thus addition must start at length-1 and iterate down the line
+    //from least sig to most sig symbol
+    //so for two sizes of numbers, we are solving the following
+    //
+    //   eg.
+    //            0  1  2  3  4  5  6  7  8  9
+    //     a     [] [] [] [] [] [] [] [] [] []     Most Sig Symbol on RHS
+    //     b     [] [] [] []                       Most Sig Symbol on RHS
+    //
+    //    a[9] + b[3] = c[9] + carry out, carry in not shown
+    //    a[8] + b[2] = c[8] + carry out, carry in not shown
+    //    a[7] + b[1] = c[7] + carry out, carry in not shown
+    //    a[6] + b[0] = c[6] + carry out, carry in not shown
+    //    a[5] + ci   = c[5] + carry out
+    //    a[4] + ci   = c[4] + co
+    //    a[3] + ci   = c[3] + co
+    //    a[2] + ci   = c[2] + co
+    //    a[1] + ci   = c[1] + co
+    //    a[0] + ci   = c[0] + co
+    //           ci   = c[-1] aka resize array if needed, to add new digit
+    //
+    //numbers could have also been stored with their least sig digit at 0
+    //and with their most sig digit at length-1, which would have made 
+    //implementation a bit easier, but I went this way and I'm committed now
+    //note that with the other endianess, the overhead would come
+    //in printing the values to the console, but that should be easy to manage
 
-        
+    //TODO
 
     return c;
 }
 
 string[] mul(string[] a, string[] b, string[,] table_mulitiplication)
 {
+    //TODO
     string[] result = { };
     return result;
 }
 
-void inc(ref string[] arr, string[] map)
+void inc(ref string[] sym, string[] map)
 {
-    int index = arr.Length - 1;
+    int index = sym.Length - 1;
     bool done = false;
 
     while (!done)
     {
         //check current symbol and determine its position in our global map/list
-        int loc = location(arr[index], map);
+        int loc = location(sym[index], map);
 
         //if we are at the last symbol in our base, increment will cause rollover
         if (loc == map.Length - 1)
         {
-            arr[index] = map[0];
+            sym[index] = map[0];
         }
         //if we are not at the last symbol, take next symbol
         else
         {
-            arr[index] = map[loc + 1];
+            sym[index] = map[loc + 1];
             done = true;
         }
         index--;
@@ -489,12 +497,12 @@ void inc(ref string[] arr, string[] map)
         //then we must add new digit to continue counting
         if ((index == -1) && (!done))
         {
-            Array.Resize(ref arr, arr.Length + 1);
-            for (int i = arr.Length - 1; i > 0; i--)
+            Array.Resize(ref sym, sym.Length + 1);
+            for (int i = sym.Length - 1; i > 0; i--)
             {
-                arr[i] = arr[i - 1];
+                sym[i] = sym[i - 1];
             }
-            arr[0] = map[1];
+            sym[0] = map[1];
             done = true;
         }
     }
