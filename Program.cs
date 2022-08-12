@@ -30,12 +30,12 @@
 // string[] input_number = { "1", "0", "1" };                                        //101 base 2, aka 5 base 10 should compute to 5 base 10
 
 
-
-
+//logging tests to a text file for now
+string path = "B:/text.txt";
 
 
 string[] input_base = { "0", "1", "2" };
-string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+string[] output_base = { "?", "L", ":", "e", "#", "$", "^", "t", "8", "x", "+", "-", "*", "/", "~", "!" };
 string[] input_number = { "1", "1", "2", "0", "1" };
 
 //Another approach, not shown here, is:
@@ -137,15 +137,35 @@ string processNumber(ref string[] input_number)
         // (11201),3 = (241),7
 
         string[,] table_addition = buildAdditionTable(output_base);
+        Console.Write("Addition ");
+        printTable(table_addition);
+
         string[,] table_multiplication = buildMultiplicationTable(output_base);
+        Console.Write("Multiplication ");
+        printTable(table_multiplication);
 
 
         //perform processing
         //currently testing and wip
         //string[] testing = fullAdder("1", "9", "2", table_addition, output_base);
-        string[] testinginput1 = {"1", "3", "3", "7"};
-        string[] testinginput2 = { "1", "9", "9", "0"};
+        string[] testinginput1 = {"L", "e", "e", "t"};
+        string[] testinginput2 = { "L", "x", "x", "?"};
         string[] testresult = add(testinginput1, testinginput2, table_addition, output_base);
+
+        Console.WriteLine();
+        Console.WriteLine("In a BASE " + output_base.Length + " number system, using the provided symbols, " +
+                            string.Join("", testinginput1) + " + " + string.Join("", testinginput2) +
+                            " = " + string.Join("",testresult));
+
+        //logging tests to file
+        using (StreamWriter file = new StreamWriter(path,true))
+        {
+            file.WriteLine();
+            file.WriteLine("In a BASE " + output_base.Length + " number system, using the provided symbols, " +
+                    string.Join("", testinginput1) + " + " + string.Join("", testinginput2) +
+                    " = " + string.Join("", testresult));
+        }
+
 
         result = String.Join("", input_number);
     }
@@ -247,9 +267,41 @@ string[,] buildMultiplicationTable(string[] number_base)
         table[i, 1] = number_base[i];
     }
 
-    //testing and wip, need to fill rest of table still
+    //use addition to build multiplication
+    //feels crummy to do this and to make the computer repeat work
+    //but in sticking with the spirit of a step by step approach
+    //we will re-build it one time
+    string[,] table_addition = buildAdditionTable(output_base);
+    
+    for (int i = 2; i < table.GetLength(0); i++)
+    {
+        string[] reference = { number_base[i] };
+        string[] value = { number_base[i] };
 
-    printTable(table);
+        //note that we need to start from the the square
+        //number_base[i] * number_base[i]
+        //then every time we add number_base[i], which is stored in reference
+        //we will recover the multiplication table for this symbol
+        //thus using addition to build multiplication
+        for (int j = 2; j < i; j++)
+        {
+            value = add(value, reference, table_addition, output_base);
+        }
+         
+        for (int j = i; j < table.GetLength(0); j++)
+        {
+            value = add(value, reference, table_addition, output_base);
+            
+            //print for testing
+            /*
+            Console.WriteLine("Writing value "+string.Join("", value) + " to  [" +  i + "," + j + "]");
+            */
+
+            table[i, j] = String.Join("", value);
+            table[j, i] = String.Join("", value);
+        }
+    }
+
     return table;
 }
 
@@ -408,12 +460,26 @@ string[,] buildAdditionTable(string[] number_base)
         symbol++;
     }
 
-    printTable(table);
     return table;
 }
 
 void printTable(string[,] table)
 {
+    //logging tests to file
+    using (StreamWriter file = new StreamWriter(path, true))
+    {
+        file.WriteLine("Begin Table");
+        for (int i = 0; i < table.GetLength(0); i++)
+        {
+            for (int j = 0; j < table.GetLength(1); j++)
+            {
+                file.Write(table[i, j] + "\t");
+            }
+            file.WriteLine();
+        }
+        file.WriteLine("End Table");
+    }
+
     Console.WriteLine("Begin Table");
     for (int i = 0; i < table.GetLength(0); i++)
     {
@@ -428,9 +494,12 @@ void printTable(string[,] table)
 
 string[] add(string[] a, string[] b, string[,] table, string[] number_base)
 {
+    //print for testing
+    /*
     Console.WriteLine();
     Console.WriteLine(string.Join("", a) + " added to " + string.Join("", b) + " is ..processing brb");
     Console.WriteLine();
+    */
 
     int max = a.Length > b.Length ? a.Length : b.Length;
 
@@ -472,8 +541,11 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
     int first_half = a.Length < b.Length ? a.Length : b.Length;
     int second_half = max - first_half;
 
+    //print for testing
+    /*
     Console.WriteLine("Size first half: " + first_half);
     Console.WriteLine("Size second half: " + second_half);
+    */
 
     string init_carry = number_base[0];
 
@@ -556,7 +628,6 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
 
         if (init_carry != number_base[0])
         {
-            //
             Array.Resize(ref result, result.Length + 1);
             for (int i = result.Length - 1; i > 0; i--)
             {
@@ -566,32 +637,46 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
         }
     }
 
-
-
+    //print for testing
+    /*
     Console.WriteLine();
     Console.WriteLine(string.Join("", a) + " added to " + string.Join("", b) + " is " + string.Join("",result) + " in base " + output_base.Length);
-
+    */
     return result;
 }
 
 string[] halfAdder(string a, string b, string[,] table, string[] number_base)
 {
-    string s = table[location(a, number_base), location(b, number_base)];
-    string[] result = new string[s.Length];
+    string[] result = { };
 
-    if (result.Length != 1 && result.Length != 2)
+    int x = location(a, number_base);
+    int y = location(b, number_base);
+
+    if (x < 0 || y < 0)
     {
-        Console.WriteLine("Error, lookup table entry has wrong length");
+        Console.WriteLine("Error, symbol not found in base" + x + " " + y);
     }
     else
     {
-        for (int i = 0; i < s.Length; i++)
+        string s = table[x, y];
+        string[] compute = new string[s.Length];
+
+        if (compute.Length != 1 && compute.Length != 2)
         {
-            result[i] = s[i].ToString();
+            Console.WriteLine("Error, lookup table entry has wrong length");
         }
+        else
+        {
+            for (int i = 0; i < s.Length; i++)
+            {
+                compute[i] = s[i].ToString();
+            }
+        }
+        result = compute;
     }
     
-    //printing for testing
+    //print for testing
+    /*
     Console.Write("HA result for a: " + a + " b " + b + " is ");
     if (result.Length == 2)
     {
@@ -601,13 +686,13 @@ string[] halfAdder(string a, string b, string[,] table, string[] number_base)
     {
         Console.WriteLine("sum: " + result[0] + " carry: none");
     }
-    
+    */
     return result;
 }
 
 string[] fullAdder(string a, string b, string ci, string[,] table, string[] number_base)
 {
-    Console.WriteLine("Started FA a " + a + " b " + b + " ci " + ci);
+    //Console.WriteLine("Started FA a " + a + " b " + b + " ci " + ci);
 
     string[] intermediate = halfAdder(a, b, table, number_base);
     string[] result = { };
@@ -634,14 +719,15 @@ string[] fullAdder(string a, string b, string ci, string[,] table, string[] numb
         }
     }
     
-    //printing for testing
+    //print for testing
+    /*
     Console.Write("Stopped FA result: ");
     for(int i = 0; i < result.Length; i++)
     {
         Console.Write(result[i]);
     }
     Console.WriteLine();
-    
+    */
     return result;
 }
 
