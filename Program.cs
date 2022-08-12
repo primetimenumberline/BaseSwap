@@ -35,7 +35,7 @@
 
 
 string[] input_base = { "0", "1", "2" };                          //base 3
-string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };     //base 7
+string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };     //base 10 testing ongoing
 string[] input_number = { "1", "1", "2", "0", "1" };              //11201 base 3, aka 127 base 10 should compute to 241 base 7
 
 //Another approach, not shown here, is:
@@ -66,14 +66,14 @@ string processNumber(ref string[] input_number)
         //we are not changing number base here
         //we are only changing the encoding of the numbers
         //aka their symbol mapping
-        symbolSwap(ref input_number);
+        symbolSwap(ref input_number, input_base, output_base);
         result = String.Join("", input_number);
     }
     else if (input_base.Length < output_base.Length)
     {
         //in this scenario, the number base we are changing to uses more characters to represent the whole numbers
         //here, we just lookup mapping in output table since output table > input table, symbol will always map
-        symbolSwap(ref input_number);
+        symbolSwap(ref input_number, input_base, output_base);
 
 
         //next, we note how numbers are formed:
@@ -143,10 +143,10 @@ string processNumber(ref string[] input_number)
         //perform processing
         //currently testing and wip
         string[] testing = fullAdder("1", "9", "2", table_addition, output_base);
-        string[] testinginput1 = {"1", "2"};
+        string[] testinginput1 = {"9", "0", "2", "1", "0"};
         string[] testinginput2 = {"2", "3"};
         string[] testresult = add(testinginput1, testinginput2, table_addition, output_base);
-        Console.WriteLine(string.Join("", testresult));
+
         result = String.Join("", input_number);
     }
     else
@@ -465,16 +465,15 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
     //note that with the other endianess, the overhead would come
     //in printing the values to the console, but that should be easy to manage
 
-    //TODO
-
     int first_half = a.Length < b.Length ? a.Length : b.Length;
     int second_half = max - first_half;
 
-    Console.WriteLine("First half: " + first_half);
-    Console.WriteLine("Second half: " + second_half);
+    Console.WriteLine("Size first half: " + first_half);
+    Console.WriteLine("Size second half: " + second_half);
+
+    string init_carry = number_base[0];
 
     int count = 0;
-    string init_carry = number_base[0];
     while (count < first_half)
     {
         string[] c = fullAdder(a[a.Length - 1 - count], b[b.Length - 1 - count], init_carry, table, number_base);
@@ -489,8 +488,25 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
             init_carry = c[0];
             result[result.Length - 1 - count] = c[1];
         }
+        //DONT FORGET ABOUT THE CARRY  not yet handled
         count++;
     }
+    
+    count = 0;
+    while (count < second_half)
+    {
+        if(a.Length < b.Length)
+        {
+            result[second_half - 1 - count] = b[second_half - 1 - count];
+        }
+        else
+        {
+            result[second_half - 1 - count] = a[second_half - 1 - count];
+        }
+        count++;
+    }
+
+    Console.WriteLine(string.Join("", a) + " added to " + string.Join("", b) + " is " + string.Join("",result) + " in base " + output_base.Length);
 
     return result;
 }
@@ -502,7 +518,7 @@ string[] halfAdder(string a, string b, string[,] table, string[] number_base)
 
     if (result.Length != 1 && result.Length != 2)
     {
-        Console.WriteLine("Error, lookup table doesn't make sense");
+        Console.WriteLine("Error, lookup table entry has wrong length");
     }
     else
     {
@@ -550,31 +566,17 @@ string[] fullAdder(string a, string b, string ci, string[,] table, string[] numb
         {
             string save = intermediate[0];
             intermediate = halfAdder(save, result[0], table, number_base);
-
-            //if (intermediate.Length == 1)
-            //{
-                result[0] = intermediate[0];
-            //}
-            /*
-            else if (intermediate.Length == 2)
-            {
-                Console.WriteLine("HERE");
-                Array.Resize(ref result, result.Length + 1);
-                result[2] = result[1];
-                result[1] = intermediate[1];
-                result[0] = intermediate[0];
-            }
-            */
+            result[0] = intermediate[0];
         }
     }
-    
+    /*
     Console.Write("Stopped FA result: ");
     for(int i = 0; i < result.Length; i++)
     {
         Console.Write(result[i]);
     }
     Console.WriteLine();
-    
+    */
     return result;
 }
 
@@ -623,7 +625,7 @@ void inc(ref string[] sym, string[] number_base)
     }
 }
 
-void symbolSwap(ref string[] input_number)
+void symbolSwap(ref string[] input_number, string[] input_base, string[] output_base)
 {
     for (int i = 0; i < input_number.Length; i++)
     {
