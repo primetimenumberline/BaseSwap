@@ -138,9 +138,11 @@ string processNumber(ref string[] input_number)
 
         string[,] table_addition = buildAdditionTable(output_base);
         string[,] table_multiplication = buildMultiplicationTable(output_base);
-        
+
 
         //perform processing
+        //currently testing and wip
+        string[] testing = add(input_base, output_base, table_addition, output_base);
 
         result = String.Join("", input_number);
     }
@@ -242,7 +244,7 @@ string[,] buildMultiplicationTable(string[] number_base)
         table[i, 1] = number_base[i];
     }
 
-    //TODO
+    //testing and wip, need to fill rest of table still
 
     printTable(table);
     return table;
@@ -421,12 +423,12 @@ void printTable(string[,] table)
     Console.WriteLine("End Table");
 }
 
-string[] add(string[] a, string[] b, string[,] table_addition)
+string[] add(string[] a, string[] b, string[,] table, string[] number_base)
 {
     int max = a.Length > b.Length ? a.Length : b.Length;
     string[] c = new string[max];
-    string ci = table_addition[0, 0];
-    string co = table_addition[0, 0];
+    string ci = table[0, 0];
+    string co = table[0, 0];
 
     //note that numbers are stored in reverse order in the array
     //such that the most sig symbol resides in index length-1
@@ -459,18 +461,78 @@ string[] add(string[] a, string[] b, string[,] table_addition)
     //in printing the values to the console, but that should be easy to manage
 
     //TODO
+    
+    int first_half = a.Length < b.Length ? a.Length : b.Length;
+    int second_half = max - first_half;
+
+    int count = 0;
+
+    while (count < first_half)
+    {
+        //testing and wip
+        string[] result = halfAdder(a[a.Length - 1 - count], b[b.Length - 1 - count],table,number_base);
+
+        count++;
+    }
 
     return c;
 }
 
-string[] mul(string[] a, string[] b, string[,] table_mulitiplication)
+string[] halfAdder(string a, string b, string[,] table, string[] number_base)
+{
+    //result[0] is the carry symbol
+    //result[1] is the sum symbol
+    string s = table[location(a, number_base), location(b, number_base)];
+    string[] result = new string[s.Length];
+
+    if (result.Length != 1 && result.Length != 2)
+    {
+        Console.WriteLine("Error, lookup table doesn't make sense");
+    }
+    else
+    {
+        for (int i = 0; i < s.Length; i++)
+        {
+            result[i] = s[i].ToString();
+        }
+    }
+
+    Console.WriteLine("a: " + a + " b: " + b + " len: " + result.Length);
+    for (int i = 0; i < result.Length; i++)
+    {
+        Console.WriteLine(result[i]);
+    }
+
+    return result;
+}
+/*
+string[] fullAdder(string a, string b, string ci, string[,] table, string[] number_base)
+{
+    string[] intermediate = halfAdder(a, b, table, number_base);
+    string[] result;
+    if (intermediate.Length == 1)
+    {
+        result = halfAdder(ci, intermediate[0])
+    }
+    else if ( intermediate.Length == 2)
+    {
+
+    }
+    else
+    {
+        Console.WriteLine("Error");
+    }
+    return result;
+}
+*/
+string[] mul(string[] a, string[] b, string[,] table_mulitiplication, string[] number_base)
 {
     //TODO
     string[] result = { };
     return result;
 }
 
-void inc(ref string[] sym, string[] map)
+void inc(ref string[] sym, string[] number_base)
 {
     int index = sym.Length - 1;
     bool done = false;
@@ -478,17 +540,17 @@ void inc(ref string[] sym, string[] map)
     while (!done)
     {
         //check current symbol and determine its position in our global map/list
-        int loc = location(sym[index], map);
+        int loc = location(sym[index], number_base);
 
         //if we are at the last symbol in our base, increment will cause rollover
-        if (loc == map.Length - 1)
+        if (loc == number_base.Length - 1)
         {
-            sym[index] = map[0];
+            sym[index] = number_base[0];
         }
         //if we are not at the last symbol, take next symbol
         else
         {
-            sym[index] = map[loc + 1];
+            sym[index] = number_base[loc + 1];
             done = true;
         }
         index--;
@@ -502,7 +564,7 @@ void inc(ref string[] sym, string[] map)
             {
                 sym[i] = sym[i - 1];
             }
-            sym[0] = map[1];
+            sym[0] = number_base[1];
             done = true;
         }
     }
@@ -525,11 +587,11 @@ void symbolSwap(ref string[] input_number)
     }
 }
 
-int location(string find, string[] map)
+int location(string find, string[] number_base)
 {
-    for (int i = 0; i < map.Length; i++)
+    for (int i = 0; i < number_base.Length; i++)
     {
-        if (find == map[i])
+        if (find == number_base[i])
         {
             return i;
         }
