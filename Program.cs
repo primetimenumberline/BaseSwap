@@ -261,7 +261,7 @@ string[,] buildAdditionTable(string[] number_base)
     //
     // Example
     // The base 7 addition table is given below
-    // Note for example, that 4+4 is still eigth, but eigth looks like 11 not 8
+    // Note for example, that 4+4 is still eight, but eight looks like 11 not 8
     // in base 7, so here is a quick ref of the table we are building
     // as we continue with the example of (11021),3 to ( ),7 so please enjoy:
     //
@@ -440,16 +440,16 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
     string[] result = new string[max];
 
     //note that numbers are stored in reverse order in the array
-    //such that the most sig symbol resides in index length-1
-    //and least sig symbol resides in index 0
+    //such that the least sig symbol resides in index length-1
+    //and most sig symbol resides in index 0
     //thus addition must start at length-1 and iterate down the line
     //from least sig to most sig symbol
     //so for two sizes of numbers, we are solving the following
     //
     //   eg.
     //            0  1  2  3  4  5  6  7  8  9
-    //     a     [] [] [] [] [] [] [] [] [] []     Most Sig Symbol on RHS
-    //     b     [] [] [] []                       Most Sig Symbol on RHS
+    //     a     [] [] [] [] [] [] [] [] [] []     Least Sig Symbol on RHS
+    //     b     [] [] [] []                       Least Sig Symbol on RHS
     //
     //    a[9] + b[3] = c[9] + carry out, carry in not shown
     //    a[8] + b[2] = c[8] + carry out, carry in not shown
