@@ -690,20 +690,20 @@ string[] halfAdder(string a, string b, string[,] table, string[] number_base)
     return result;
 }
 
-string[] fullAdder(string a, string b, string ci, string[,] table, string[] number_base)
+string[] fullAdder(string a, string b, string ci, string[,] table_addition, string[] number_base)
 {
     //Console.WriteLine("Started FA a " + a + " b " + b + " ci " + ci);
 
-    string[] intermediate = halfAdder(a, b, table, number_base);
+    string[] intermediate = halfAdder(a, b, table_addition, number_base);
     string[] result = { };
 
     if (intermediate.Length == 1)
     {
-        result = halfAdder(ci, intermediate[0], table, number_base);
+        result = halfAdder(ci, intermediate[0], table_addition, number_base);
     }
     else if(intermediate.Length == 2)
     {
-        result = halfAdder(ci, intermediate[1], table, number_base);
+        result = halfAdder(ci, intermediate[1], table_addition, number_base);
 
         if (result.Length == 1)
         {
@@ -714,7 +714,7 @@ string[] fullAdder(string a, string b, string ci, string[,] table, string[] numb
         else if (result.Length == 2)
         {
             string save = intermediate[0];
-            intermediate = halfAdder(save, result[0], table, number_base);
+            intermediate = halfAdder(save, result[0], table_addition, number_base);
             result[0] = intermediate[0];
         }
     }
@@ -731,10 +731,85 @@ string[] fullAdder(string a, string b, string ci, string[,] table, string[] numb
     return result;
 }
 
-string[] mul(string[] a, string[] b, string[,] table_mulitiplication, string[] number_base)
+string[] mul(string[] a, string[] b, string[,] table_multiplication, string[,] table_addition, string[] number_base)
 {
-    //TODO
-    string[] result = { };
+    //  Standard long multiplication in use
+    //  Note that the number is stored in array with 
+    //  the least sig symbol on the RHS
+    //  
+    //
+    //            0  1  2  3  4  5  6  7  8  9
+    //     a     [] [] [] [] [] [] [] [] [] []     Least Sig Symbol on RHS
+    //     b     [] [] [] []                       Least Sig Symbol on RHS
+    //            0  1  2  3
+    //
+    //    re-imagine:
+    //
+    //
+    //            0  1  2  3  4  5  6  7  8  9
+    //     a     [] [] [] [] [] [] [] [] [] []     Least Sig Symbol on RHS
+    //     b                       [] [] [] []     Least Sig Symbol on RHS
+    //                              0  1  2  3
+
+    string[] result = { number_base[0] };
+    string[] intermediate = { number_base[0] };
+
+    int iterations = a.Length < b.Length ? a.Length : b.Length;
+    string[] longer = a.Length > b.Length ? a : b;
+    string[] shorter = a.Length > b.Length ? b : a;
+
+    for (int i = 0; i < iterations - 1; i++)
+    {
+        intermediate = fullishMultiplier(longer, shorter[i], i, table_addition, table_multiplication, number_base);
+        result = add(result, intermediate, table_addition, number_base);
+    }
+
+    return result;
+}
+
+string[] fullishMultiplier(string[] a, string b, int offset, string[,] table_addition, string[,] table_multiplication, string[] number_base)
+{
+    // Steps:
+    // for each index i in a, multiply a[i] and b
+    // add the carry in to the resulting product
+    // determine the carry out and move to next i
+    // add in the offset before returning
+
+    string[] result = new string[a.Length];
+    string[] carry = { number_base[0] };
+
+    for (int i = 0; i < a.Length; i++)
+    {
+        //since this is a lookup table, we can reuse the "half adder" logic
+        //note that in binary a half adder can be reduced to an xor gate for the lookup table
+        string[] prod = halfAdder(a[i], b, table_multiplication, number_base);
+        prod = add(carry, prod, table_addition, number_base);
+        if(prod.Length == 2)
+        {
+            carry[0] = prod[0];
+            result[result.Length - 1 - i] = prod[1];
+            if (i == a.Length - 1)
+            {
+                Array.Resize(ref result, result.Length + 1);
+                for (int j = result.Length - 1; j > 0; j--)
+                {
+                    result[j] = result[j - 1];
+                }
+                result[0] = prod[0];
+            }
+        }
+        else
+        {
+            carry[0] = number_base[0];
+            result[result.Length - 1 - i] = prod[0];
+        }
+
+    }
+    Array.Resize(ref result, result.Length + offset);
+    for(int i = 0; i < offset; i++)
+    {
+        result[result.Length - 1 - i] = number_base[0];
+    }
     return result;
 }
 
