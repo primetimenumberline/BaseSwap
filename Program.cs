@@ -13,31 +13,25 @@
 // { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };      //base 16   hex (hex!!!)
 // { "*", ".", ":", ".:", "::", ".::", ":::" };                                             //base 7    broken encoding (symbols must be one char long, and must be unique)
 //
-//
-//
-//
 // Sample declarations
 // string[] input_base = { "0", "1", "2" };                          //base 3
 // string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };     //base 7
 // string[] input_number = { "1", "1", "2", "0", "1" };              //11201 base 3, aka 127 base 10 should compute to 241 base 7
-//
-// string[] input_base = { "0", "1", "2", "3", "4", "5", "6" };          //base 7
-// string[] output_base = { "*", ".", ":", ".:", "::", ".::", ":::" };   //base 7 broken
-// string[] input_number = { "1", "1", "2", "0", "1" };                  //11201 base 7, aka 127 base 10 should compute to ..:*. base 7 broken
 //
 // string[] input_base = { "0", "1" };                                               //base 2
 // string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };      //base 10
 // string[] input_number = { "1", "0", "1" };                                        //101 base 2, aka 5 base 10 should compute to 5 base 10
 
 
-//logging tests to a text file for now
-string path = "B:/text.txt";
 
 
-string[] input_base = { "0", "1" };
-string[] output_base = { "L","o", "l", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" };
-string[] input_number = { "0" };
+
+//string[] input_base = { "0", "1", "2" };
+//string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };
 //string[] input_number = { "1", "1", "2", "0", "1" };
+string[] input_base = { "0", "1" };                                               //base 2
+string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };      //base 10
+string[] input_number = { "1", "0", "1" };   
 
 //Another approach, not shown here, is:
 //
@@ -49,19 +43,15 @@ string[] input_number = { "0" };
 //since support for these operations already exists in modern languages
 
 string input = string.Join("", input_number);
-string output = processNumber(ref input_number);
+string output = baseSwap(input_number, input_base, output_base);
 
-//Console.WriteLine(input + " in base " + input_base.Length + " is");
-//Console.WriteLine(output + " in base " + output_base.Length);
+Console.WriteLine(input + " in base " + input_base.Length + " is");
+Console.WriteLine(output + " in base " + output_base.Length);
 
-
-
-
-
-string processNumber(ref string[] input_number)
+string baseSwap( string[] input_number, string[] input_base, string[] output_base)
 {
     string result = "Sorry, not right now";
-    if (input_base.Length > output_base.Length)//== output_base.Length)
+    if (input_base.Length == output_base.Length)
     {   
         //just symbol swap and return
         //we are not changing number base here
@@ -70,12 +60,21 @@ string processNumber(ref string[] input_number)
         symbolSwap(ref input_number, input_base, output_base);
         result = String.Join("", input_number);
     }
-    else if (input_base.Length <= output_base.Length)//< output_base.Length)
+    else if (input_base.Length < output_base.Length)
     {
         //in this scenario, the number base we are changing to uses more characters to represent the whole numbers
         //here, we just lookup mapping in output table since output table > input table, symbol will always map
         symbolSwap(ref input_number, input_base, output_base);
 
+        //if the length is only one symbol long
+        //then we are done after the symbol swap and
+        //may immediately return
+        //else we must run a computation
+        //to derive our new number in our new base
+        if (input_number.Length < 2)
+        {
+            return String.Join("", input_number);
+        }
 
         //next, we note how numbers are formed:
         // Let's look at the number 11201 in base 3
@@ -138,50 +137,24 @@ string processNumber(ref string[] input_number)
         // (11201),3 = (241),7
 
         string[,] table_addition = buildAdditionTable(output_base);
-        Console.Write("Addition ");
-        printTable(table_addition);
-
         string[,] table_multiplication = buildMultiplicationTable(output_base);
-        Console.Write("Multiplication ");
-        printTable(table_multiplication);
 
+        string[] ans = { input_number[0] };
+        string[] b = { output_base[input_base.Length] };
 
-        //perform processing
-        //currently testing and wip
-        //string[] testing = fullAdder("1", "9", "2", table_addition, output_base);
-        //string[] testinginput1 = {"1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1"};
-        //string[] testinginput2 = {"1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"};
-        string[] testinginput1 = { "1", "3", "3", "7" };
-        string[] testinginput2 = { "1", "9", "9", "0" };
-        string[] testresult1 = add(testinginput1, testinginput2, table_addition, output_base);
-
-        Console.WriteLine();
-        Console.WriteLine("In a BASE " + output_base.Length + " number system, using the provided symbols, " +
-                            string.Join("", testinginput1) + " + " + string.Join("", testinginput2) +
-                            " = " + string.Join("",testresult1));
-        string[] testresult2 = mul(testinginput1, testinginput2, table_multiplication, table_addition, output_base);
-
-        Console.WriteLine();
-        Console.WriteLine("In a BASE " + output_base.Length + " number system, using the provided symbols, " +
-                            string.Join("", testinginput1) + " * " + string.Join("", testinginput2) +
-                            " = " + string.Join("", testresult2));
-
-        //logging tests to file
-        using (StreamWriter file = new StreamWriter(path,true))
+        int i = 1;
+        do
         {
-            file.WriteLine();
-            file.WriteLine("In a BASE " + output_base.Length + " number system, using the provided symbols, " +
-                    string.Join("", testinginput1) + " + " + string.Join("", testinginput2) +
-                    " = " + string.Join("", testresult1));
-
-            file.WriteLine();
-            file.WriteLine("In a BASE " + output_base.Length + " number system, using the provided symbols, " +
-                    string.Join("", testinginput1) + " * " + string.Join("", testinginput2) +
-                    " = " + string.Join("", testresult2));
-        }
-
-
-        result = String.Join("", input_number);
+            string[] x = { input_number[0] };
+            if (input_number.Length > 1) 
+            {
+                x[0] = output_base[location(input_number[i], input_base)];
+            }
+            ans = mul(ans, b, table_multiplication, table_addition, output_base);
+            ans = add(ans, x, table_addition, output_base);
+            i++;
+        } while (i < input_number.Length);
+        result = String.Join("", ans);
     }
     else
     {
@@ -479,21 +452,6 @@ string[,] buildAdditionTable(string[] number_base)
 
 void printTable(string[,] table)
 {
-    //logging tests to file
-    using (StreamWriter file = new StreamWriter(path, true))
-    {
-        file.WriteLine("Begin Table");
-        for (int i = 0; i < table.GetLength(0); i++)
-        {
-            for (int j = 0; j < table.GetLength(1); j++)
-            {
-                file.Write(table[i, j] + "\t");
-            }
-            file.WriteLine();
-        }
-        file.WriteLine("End Table");
-    }
-
     Console.WriteLine("Begin Table");
     for (int i = 0; i < table.GetLength(0); i++)
     {
