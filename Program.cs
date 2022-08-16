@@ -26,31 +26,53 @@
 
 
 
-//string[] input_base = { "0", "1", "2" };
-//string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };
-//string[] input_number = { "1", "1", "2", "0", "1" };
-string[] input_base = { "0", "1" };                                               //base 2
-string[] output_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };      //base 10
-string[] input_number = { "1", "0", "1" };   
+string[] input_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8" };
+string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };
 
-//Another approach, not shown here, is:
-//
-//string decimal_number = ConverToDecimal(input_number, input_base);
-//string output = ConvertFromDecimal(decimal_number, output_base);
-//
-//by using decimal as an intermediary value, we would not have to 
-//build our own arithmetic functions such  as add() and mul()
-//since support for these operations already exists in modern languages
+Console.WriteLine("Now converting between BASE " + input_base.Length + " and BASE " + output_base.Length + " using the provided built-in symbols.");
+Console.WriteLine();
 
-string input = string.Join("", input_number);
-string output = baseSwap(input_number, input_base, output_base);
-
-Console.WriteLine(input + " in base " + input_base.Length + " is");
-Console.WriteLine(output + " in base " + output_base.Length);
-
-string baseSwap( string[] input_number, string[] input_base, string[] output_base)
+while (true) 
 {
-    string result = "Sorry, not right now";
+    Console.Write("Enter number: ");
+    string input = Console.ReadLine();
+
+    if (input == "exit")
+    {
+        break;
+    }
+
+    string[] input_number = new string[input.Length];
+    for (int i = 0; i < input_number.Length; i++)
+    {
+        input_number[i] = input[i].ToString();
+    }
+
+    string output = baseSwap(input_number, input_base, output_base);
+
+    //Another approach, not shown here, is:
+    //
+    //string decimal_number = ConverToDecimal(input_number, input_base);
+    //string output = ConvertFromDecimal(decimal_number, output_base);
+    //
+    //by using decimal as an intermediary value, we would not have to 
+    //build our own arithmetic functions such  as add() and mul()
+    //since support for these operations already exists in modern languages
+
+    Console.WriteLine(input + " in base " + input_base.Length + " is");
+    Console.WriteLine(output + " in base " + output_base.Length);
+    Console.WriteLine();
+}
+
+
+string baseSwap(string[] input_number, string[] input_base, string[] output_base)
+{
+    if (!validateInputs(input_number, input_base))
+    {
+        return "Invalid input";
+    }
+
+    string result = "";
     if (input_base.Length == output_base.Length)
     {   
         //just symbol swap and return
@@ -76,7 +98,6 @@ string baseSwap( string[] input_number, string[] input_base, string[] output_bas
             return String.Join("", input_number);
         }
 
-        //next, we note how numbers are formed:
         // Let's look at the number 11201 in base 3
         // which we will represent as (11201),3
         // 
@@ -158,10 +179,74 @@ string baseSwap( string[] input_number, string[] input_base, string[] output_bas
     }
     else
     {
+        string[,] table_addition = buildAdditionTable(output_base);
+        string[,] table_multiplication = buildMultiplicationTable(output_base);
+
+        //if the length is only one symbol long
+        //then we are done after the symbol swap and
+        //may immediately return
+        //else we must run a computation
+        //to derive our new number in our new base
+        if (input_number.Length < 2)
+        {
+            return String.Join("", getSmall(input_number[0], input_base, output_base, table_addition));
+        }
+
+        string[] ans = getSmall(input_number[0], input_base, output_base, table_addition);
         //shitty, have to compute what the base looks like in the smaller system
+        string[] b = { output_base[0] };
+        for (int j = 0; j < input_base.Length; j++)
+        {
+            inc(ref b, output_base);
+        }
+        //otherwise, exact same logic
+
+        int i = 1;
+        do
+        {
+            string[] x = getSmall(input_number[0], input_base, output_base, table_addition);
+
+            if (input_number.Length > 1)
+            {
+                //Console.WriteLine("inputting " + input_number[i]);
+                x = getSmall(input_number[i], input_base, output_base, table_addition);
+                //Console.WriteLine("returned " + string.Join("", x));
+            }
+            //Console.Write("ans: " + string.Join("", ans));
+            ans = mul(ans, b, table_multiplication, table_addition, output_base);
+            //Console.WriteLine(" mul b: " + string.Join("", b) + " ans: " + string.Join("",ans));
+            ans = add(ans, x, table_addition, output_base);
+            //Console.WriteLine("x: "+string.Join("",x)+" ans: " + string.Join("", ans));
+            i++;
+        } while (i < input_number.Length);
+        result = String.Join("", ans);
     }
     return result;
+}
 
+bool validateInputs(string[] input_number, string[] input_base)
+{
+    for (int i = 0; i < input_number.Length; i++)
+    {
+        if(location(input_number[i],input_base) < 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+string[] getSmall(string num, string[] input_base, string[] output_base, string[,] table_addition)
+{
+    //it is assumed that we are taking num from larger base
+    //to smaller base, when calling this function
+    string[] result = { output_base[0] };
+    int loc = location(num, input_base);
+    for (int j = 0; j < loc; j++)
+    {
+        inc(ref result, output_base);
+    }
+    return result;
 }
 
 string[,] buildMultiplicationTable(string[] number_base)
