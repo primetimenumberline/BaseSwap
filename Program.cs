@@ -34,9 +34,10 @@
 string path = "B:/text.txt";
 
 
-string[] input_base = { "0", "1", "2" };
-string[] output_base = { "?", "L", ":", "e", "#", "$", "^", "t", "8", "x", "+", "-", "*", "/", "~", "!" };
-string[] input_number = { "1", "1", "2", "0", "1" };
+string[] input_base = { "0", "1" };
+string[] output_base = { "L","o", "l", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" };
+string[] input_number = { "0" };
+//string[] input_number = { "1", "1", "2", "0", "1" };
 
 //Another approach, not shown here, is:
 //
@@ -60,7 +61,7 @@ string output = processNumber(ref input_number);
 string processNumber(ref string[] input_number)
 {
     string result = "Sorry, not right now";
-    if (input_base.Length == output_base.Length)
+    if (input_base.Length > output_base.Length)//== output_base.Length)
     {   
         //just symbol swap and return
         //we are not changing number base here
@@ -69,7 +70,7 @@ string processNumber(ref string[] input_number)
         symbolSwap(ref input_number, input_base, output_base);
         result = String.Join("", input_number);
     }
-    else if (input_base.Length < output_base.Length)
+    else if (input_base.Length <= output_base.Length)//< output_base.Length)
     {
         //in this scenario, the number base we are changing to uses more characters to represent the whole numbers
         //here, we just lookup mapping in output table since output table > input table, symbol will always map
@@ -148,14 +149,22 @@ string processNumber(ref string[] input_number)
         //perform processing
         //currently testing and wip
         //string[] testing = fullAdder("1", "9", "2", table_addition, output_base);
-        string[] testinginput1 = {"L", "e", "e", "t"};
-        string[] testinginput2 = { "L", "x", "x", "?"};
-        string[] testresult = add(testinginput1, testinginput2, table_addition, output_base);
+        //string[] testinginput1 = {"1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1", "1", "0", "1"};
+        //string[] testinginput2 = {"1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"};
+        string[] testinginput1 = { "1", "3", "3", "7" };
+        string[] testinginput2 = { "1", "9", "9", "0" };
+        string[] testresult1 = add(testinginput1, testinginput2, table_addition, output_base);
 
         Console.WriteLine();
         Console.WriteLine("In a BASE " + output_base.Length + " number system, using the provided symbols, " +
                             string.Join("", testinginput1) + " + " + string.Join("", testinginput2) +
-                            " = " + string.Join("",testresult));
+                            " = " + string.Join("",testresult1));
+        string[] testresult2 = mul(testinginput1, testinginput2, table_multiplication, table_addition, output_base);
+
+        Console.WriteLine();
+        Console.WriteLine("In a BASE " + output_base.Length + " number system, using the provided symbols, " +
+                            string.Join("", testinginput1) + " * " + string.Join("", testinginput2) +
+                            " = " + string.Join("", testresult2));
 
         //logging tests to file
         using (StreamWriter file = new StreamWriter(path,true))
@@ -163,7 +172,12 @@ string processNumber(ref string[] input_number)
             file.WriteLine();
             file.WriteLine("In a BASE " + output_base.Length + " number system, using the provided symbols, " +
                     string.Join("", testinginput1) + " + " + string.Join("", testinginput2) +
-                    " = " + string.Join("", testresult));
+                    " = " + string.Join("", testresult1));
+
+            file.WriteLine();
+            file.WriteLine("In a BASE " + output_base.Length + " number system, using the provided symbols, " +
+                    string.Join("", testinginput1) + " * " + string.Join("", testinginput2) +
+                    " = " + string.Join("", testresult2));
         }
 
 
@@ -647,6 +661,16 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
 
 string[] halfAdder(string a, string b, string[,] table, string[] number_base)
 {
+    //This function looks up the operation of a into b for a single digit
+    //my chosen naming, derives from the binary XOR lookup/switching table
+    //and from the half adder and full adder circuits
+    //but for the sake of processing numbers as any symbol,
+    //we are generalizing the lookup table
+    //for both addition and multiplication
+    //also, I coulda did this as char and string
+    //instead of string and string[]
+    //maybe next time
+
     string[] result = { };
 
     int x = location(a, number_base);
@@ -733,6 +757,9 @@ string[] fullAdder(string a, string b, string ci, string[,] table_addition, stri
 
 string[] mul(string[] a, string[] b, string[,] table_multiplication, string[,] table_addition, string[] number_base)
 {
+    //TODO: SCRUB THE LEADING ZERO's FROM a AND b
+    //ANY ZERO PADDING MUST COME OUT BEFORE PROCESSING
+
     //  Standard long multiplication in use
     //  Note that the number is stored in array with 
     //  the least sig symbol on the RHS
@@ -754,37 +781,51 @@ string[] mul(string[] a, string[] b, string[,] table_multiplication, string[,] t
     string[] result = { number_base[0] };
     string[] intermediate = { number_base[0] };
 
+    if ((a.Length == 1 && a[0] == number_base[0]) ||
+        (b.Length == 1 && b[0] == number_base[0] ))
+    {
+        return result;
+    }
+
     int iterations = a.Length < b.Length ? a.Length : b.Length;
     string[] longer = a.Length > b.Length ? a : b;
     string[] shorter = a.Length > b.Length ? b : a;
 
-    for (int i = 0; i < iterations - 1; i++)
+    for (int i = 0; i < iterations; i++)
     {
-        intermediate = fullishMultiplier(longer, shorter[i], i, table_addition, table_multiplication, number_base);
+        //Console.WriteLine("longer: " + string.Join("", longer) + " shorter: " + string.Join("", shorter));
+        intermediate = fullMultiplier(longer, shorter[shorter.Length - 1 - i], i, table_addition, table_multiplication, number_base);
+        //Console.WriteLine("result: " + string.Join("", result) + " + intermediate:  " + string.Join("",intermediate));
         result = add(result, intermediate, table_addition, number_base);
+        //Console.WriteLine("result: " + string.Join("", result));
+        //Console.WriteLine();
     }
 
     return result;
 }
 
-string[] fullishMultiplier(string[] a, string b, int offset, string[,] table_addition, string[,] table_multiplication, string[] number_base)
+string[] fullMultiplier(string[] a, string b, int offset, string[,] table_addition, string[,] table_multiplication, string[] number_base)
 {
     // Steps:
     // for each index i in a, multiply a[i] and b
     // add the carry in to the resulting product
     // determine the carry out and move to next i
     // add in the offset before returning
-
+    
     string[] result = new string[a.Length];
     string[] carry = { number_base[0] };
 
     for (int i = 0; i < a.Length; i++)
     {
+        //Console.Write("a: " + a[a.Length - 1 - i] + " b: " + b + " ");
+
         //since this is a lookup table, we can reuse the "half adder" logic
         //note that in binary a half adder can be reduced to an xor gate for the lookup table
-        string[] prod = halfAdder(a[i], b, table_multiplication, number_base);
+        string[] prod = halfAdder(a[a.Length - 1 - i], b, table_multiplication, number_base);
+        //Console.WriteLine("prod: " + String.Join("", prod));
         prod = add(carry, prod, table_addition, number_base);
-        if(prod.Length == 2)
+        //Console.WriteLine(" + carry: " + String.Join("", carry) + " prod: " + String.Join("", prod));
+        if (prod.Length == 2)
         {
             carry[0] = prod[0];
             result[result.Length - 1 - i] = prod[1];
@@ -803,7 +844,7 @@ string[] fullishMultiplier(string[] a, string b, int offset, string[,] table_add
             carry[0] = number_base[0];
             result[result.Length - 1 - i] = prod[0];
         }
-
+        //Console.WriteLine();
     }
     Array.Resize(ref result, result.Length + offset);
     for(int i = 0; i < offset; i++)
