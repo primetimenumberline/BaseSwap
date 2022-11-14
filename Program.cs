@@ -2,8 +2,6 @@
 //A program to change between number bases, 
 //using any symbol mapping you can conceive of as a string
 //
-//
-//
 // Sample bases
 // { "0", "1" };                                                                            //base 2    binary standard encoding
 // { "0", "1", "2" };                                                                       //base 3
