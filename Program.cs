@@ -1,4 +1,5 @@
 ﻿//BASE SWAP
+//A program to change between number bases
 //The most flexible number base converter around
 //
 // Sample bases
@@ -117,7 +118,7 @@ string baseSwap(string[] input_number, string[] input_base, string[] output_base
         //to derive our new number in our new base
         if (input_number.Length < 2)
         {
-            Console.WriteLine("input_number.Length < 2");
+            //Console.WriteLine("input_number.Length < 2");
             return String.Join("", input_number);
         }
 
