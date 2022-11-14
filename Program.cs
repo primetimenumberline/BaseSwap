@@ -1,6 +1,5 @@
 ﻿//BASE SWAP
-//A program to change between number bases, 
-//using any symbol mapping you can conceive of as a string
+//The most flexible number base converter around
 //
 // Sample bases
 // { "0", "1" };                                                                            //base 2    binary standard encoding
@@ -24,8 +23,33 @@
 
 
 
-string[] input_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8" };
-string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };
+//string[] input_base = { "0", "1", "2" };
+//string[] output_base = { "0", "1", "2", "3", "4", "5", "6" };
+
+//string[] input_base = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+//string[] output_base = { " ","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z" };
+
+
+
+string input_base_str = "0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.";
+string output_base_str = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ .,;:'\"()<>?/{}[]\\|+=_-*&^%$#@!`~";
+
+
+
+string[] input_base = new string[input_base_str.Length];
+for (int i = 0; i < input_base.Length; i++)
+{
+    input_base[i] = input_base_str[i].ToString();
+}
+
+string[] output_base = new string[output_base_str.Length];
+for (int i = 0; i < output_base.Length; i++)
+{
+    output_base[i] = output_base_str[i].ToString();
+}
+
+
+
 
 Console.WriteLine("Now converting between BASE " + input_base.Length + " and BASE " + output_base.Length + " using the provided built-in symbols.");
 Console.WriteLine();
@@ -50,7 +74,7 @@ while (true)
 
     //Another approach, not shown here, is:
     //
-    //string decimal_number = ConverToDecimal(input_number, input_base);
+    //int decimal_number = ConverToDecimal(input_number, input_base);
     //string output = ConvertFromDecimal(decimal_number, output_base);
     //
     //by using decimal as an intermediary value, we would not have to 
@@ -93,6 +117,7 @@ string baseSwap(string[] input_number, string[] input_base, string[] output_base
         //to derive our new number in our new base
         if (input_number.Length < 2)
         {
+            Console.WriteLine("input_number.Length < 2");
             return String.Join("", input_number);
         }
 
@@ -158,16 +183,19 @@ string baseSwap(string[] input_number, string[] input_base, string[] output_base
         string[,] table_addition = buildAdditionTable(output_base);
         string[,] table_multiplication = buildMultiplicationTable(output_base);
 
+        //printTable(table_multiplication);
+
         string[] ans = { input_number[0] };
         string[] b = { output_base[input_base.Length] };
 
         int i = 1;
         do
         {
+            //Console.WriteLine(input_number.Length + " i" + i + " " + ans[ans.Length - 1]);
             string[] x = { input_number[0] };
             if (input_number.Length > 1) 
             {
-                x[0] = output_base[location(input_number[i], input_base)];
+                x[0] = output_base[location(input_number[i], output_base)];
             }
             ans = mul(ans, b, table_multiplication, table_addition, output_base);
             ans = add(ans, x, table_addition, output_base);
@@ -693,10 +721,10 @@ string[] add(string[] a, string[] b, string[,] table, string[] number_base)
     }
 
     //print for testing
-    /*
-    Console.WriteLine();
-    Console.WriteLine(string.Join("", a) + " added to " + string.Join("", b) + " is " + string.Join("",result) + " in base " + output_base.Length);
-    */
+    
+    //Console.WriteLine();
+    //Console.WriteLine(string.Join("", a) + " added to " + string.Join("", b) + " is " + string.Join("",result) + " in base " + output_base.Length);
+    
     return result;
 }
 
@@ -946,8 +974,10 @@ void symbolSwap(ref string[] input_number, string[] input_base, string[] output_
         else
         {
             input_number[i] = output_base[loc];
+            //Console.Write(input_number[i]);
         }
     }
+    //Console.WriteLine();
 }
 
 int location(string find, string[] number_base)
